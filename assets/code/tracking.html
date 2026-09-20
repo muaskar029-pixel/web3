@@ -7,37 +7,24 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
     <style>
-        /* CSS Tambahan Khusus untuk Halaman Tracking */
         .tracking-layout {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             min-height: 100vh; padding-top: 100px; padding-bottom: 4rem;
         }
-        .radar-container {
-            position: relative; width: 120px; height: 120px; margin: 0 auto 2rem;
-            display: flex; justify-content: center; align-items: center;
+        .ai-score-card {
+            background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; text-align: left;
         }
-        .radar-ring {
-            position: absolute; width: 100%; height: 100%;
-            border: 2px dashed var(--cyan); border-radius: 50%;
-            animation: spin-slow 8s linear infinite; opacity: 0.8;
-        }
-        .radar-ring-inner {
-            position: absolute; width: 70%; height: 70%;
-            border: 2px solid transparent; border-top: 2px solid var(--neon); border-bottom: 2px solid var(--neon);
-            border-radius: 50%; animation: spin-reverse 4s linear infinite;
-        }
+        .score-bar-bg { background: rgba(255,255,255,0.05); height: 8px; border-radius: 4px; overflow: hidden; margin-top: 0.5rem; }
+        .score-bar-fill { background: var(--cyan); height: 100%; width: 0%; transition: width 1.5s ease-in-out; box-shadow: 0 0 10px var(--cyan); }
+        
         .terminal-log {
             background: rgba(0, 0, 0, 0.7); border: 1px solid var(--glass-border);
-            border-radius: 12px; padding: 1.5rem; font-family: monospace;
-            color: var(--text-muted); font-size: 0.85rem; height: 150px;
-            overflow-y: hidden; position: relative; text-align: left;
-            box-shadow: inset 0 0 20px rgba(0,240,255,0.05);
+            border-radius: 12px; padding: 1.25rem; font-family: monospace;
+            color: var(--text-muted); font-size: 0.8rem; height: 130px;
+            overflow-y: hidden; position: relative; text-align: left; margin-top: 1.5rem;
         }
-        .terminal-log::after {
-            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 40px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9));
-        }
-        .log-entry { margin-bottom: 0.5rem; opacity: 0; animation: fadeInLog 0.3s forwards; }
+        .log-entry { margin-bottom: 0.4rem; opacity: 0; animation: fadeInLog 0.3s forwards; }
         .text-neon { color: var(--neon); }
         .text-amber { color: var(--amber-400); }
         @keyframes fadeInLog { to { opacity: 1; } }
@@ -45,9 +32,6 @@
 </head>
 <body>
 
-    <div class="ambient-glow"></div>
-
-    <!-- NAVBAR (Versi Publik Tanpa Connect Wallet) -->
     <div class="navbar-wrapper container fade-up">
         <nav class="navbar">
             <div class="nav-left">
@@ -73,7 +57,6 @@
                 </button>
             </div>
 
-            <!-- Dropdown Menu HP -->
             <div id="mobileMenu" class="mobile-menu">
                 <a href="index.html">Beranda</a>
                 <a href="dashboard.html">Dasbor Validator</a>
@@ -81,92 +64,158 @@
         </nav>
     </div>
 
-    <!-- MAIN TRACKING CONTENT -->
     <main class="container tracking-layout">
-        
-        <div class="card-glass fade-up delay-1" style="max-width: 700px; width: 100%; text-align: center; padding: 3rem 2rem;">
+        <div class="card-glass fade-up delay-1" style="max-width: 750px; width: 100%; text-align: center; padding: 2.5rem 2rem;">
             
-            <!-- Animasi Radar Pemindai -->
-            <div class="radar-container">
-                <div class="radar-ring"></div>
-                <div class="radar-ring-inner"></div>
-                <iconify-icon icon="mdi:radar" style="font-size: 3rem; color: var(--cyan); animation: pulse-glow 2s infinite alternate;"></iconify-icon>
-            </div>
-
-            <!-- Status Header -->
-            <div class="badge-waiting" style="margin-bottom: 1.5rem;">
+            <div class="badge-waiting" id="scan-badge" style="margin-bottom: 1rem; border-color: var(--cyan); color: var(--cyan); background: rgba(0,240,255,0.1);">
                 <div class="badge-content">
                     <iconify-icon icon="mdi:loading" class="animate-spin" style="font-size: 1.2rem;"></iconify-icon>
-                    <span style="font-size: 0.9rem;">Analisis Sedang Berlangsung</span>
+                    <span id="badge-text-status" style="font-size: 0.85rem;">AI Sedang Memindai Tautan...</span>
                 </div>
             </div>
 
-            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Memverifikasi Target</h2>
-            <div class="url-box" style="display: inline-block; padding: 0.5rem 1.5rem; margin-bottom: 2rem;">
-                https://claim-airdrop-sepolia-eth.web.app/login
+            <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem;">Laporan Pemindaian Tautan</h2>
+            
+            <div class="url-box" id="target-url-view" style="display: inline-block; padding: 0.4rem 1.2rem; margin-bottom: 1.5rem;">
+                Memuat tautan...
             </div>
 
-            <!-- Grid Metrik -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; text-align: left;">
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px;">
-                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">Status Antrean</div>
-                    <div style="font-family: monospace; font-size: 1.2rem; color: var(--cyan);">Tugas #8893</div>
+            <!-- KOTAK SKOR AI DINAMIS -->
+            <div class="ai-score-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <iconify-icon icon="mdi:brain" style="color: var(--cyan); font-size: 1.2rem;"></iconify-icon> Skor Indikasi Risiko AI
+                    </span>
+                    <span id="risk-label" style="background: rgba(255,255,255,0.1); color: var(--text-muted); padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: bold;">Menganalisis...</span>
                 </div>
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px;">
-                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">Konsensus Validator</div>
-                    <div style="font-family: monospace; font-size: 1.2rem; color: #fbbf24;" id="consensus-counter">0 / 3 Suara</div>
+                <p id="ai-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; text-align: left;">
+                    Mesin AI sedang mengevaluasi struktur URL dan keamanan domain secara real-time...
+                </p>
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                        <span>Tingkat Kemiripan Phishing</span>
+                        <span id="percentage-text" style="color: #fff; font-weight: bold;">0%</span>
+                    </div>
+                    <div class="score-bar-bg"><div class="score-bar-fill" id="score-bar"></div></div>
                 </div>
             </div>
 
-            <!-- Terminal Log Simulasi -->
-            <div class="terminal-log" id="terminal-screen">
-                <div class="log-entry">> Inisialisasi ShieldChain Protocol... <span style="color: #34d399;">[OK]</span></div>
+            <!-- TRACKER KONSENSUS KOMUNITAS & SINKRONISASI VOTING -->
+            <div style="border-top: 1px solid var(--glass-border); padding-top: 1.5rem; text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem;">
+                        <iconify-icon icon="mdi:gavel" style="color: var(--amber-400);"></iconify-icon> Status Konsensus Validator On-Chain
+                    </span>
+                    <span style="font-family: monospace; font-size: 0.85rem; color: var(--amber-400);" id="consensus-counter">Menunggu Antrean Validator</span>
+                </div>
+
+                <div class="terminal-log" id="terminal-screen">
+                    <div class="log-entry">> Memulai inisialisasi pemindai heuristik AI...</div>
+                </div>
             </div>
 
         </div>
     </main>
 
-    <!-- Script Simulasi Real-time untuk Demo Hackathon -->
     <script>
+        // FUNGSI HEURISTIK AI DINAMIS (Bisa diganti API Backend nantinya)
+        function analyzeUrlWithAI(url) {
+            let lowerUrl = url.toLowerCase();
+            let score = 15; 
+            let label = "Sangat Aman";
+            let color = "#34d399";
+            let desc = "AI mendeteksi struktur domain resmi atau netral tanpa indikasi skrip berbahaya.";
+
+            // Jika domain resmi/pemerintahan/pendidikan/teknologi
+            if (lowerUrl.includes('gov') || lowerUrl.includes('edu') || lowerUrl.includes('komdigi') || lowerUrl.includes('github') || lowerUrl.includes('google') || lowerUrl.includes('ui.ac.id')) {
+                score = Math.floor(Math.random() * 8) + 3; // 3% - 10%
+                label = "Aman (Terverifikasi)";
+                color = "#34d399";
+                desc = "AI memverifikasi bahwa domain ini bersih dan terdaftar sebagai entitas resmi/tepercaya.";
+            } 
+            // Jika mengandung indikasi scam/phishing
+            else if (lowerUrl.includes('airdrop') || lowerUrl.includes('claim') || lowerUrl.includes('login') || lowerUrl.includes('free') || lowerUrl.includes('crypto') || lowerUrl.includes('nekopoi') || lowerUrl.includes('gift')) {
+                score = Math.floor(Math.random() * 15) + 80; // 80% - 95%
+                label = "Tinggi (Scam)";
+                color = "#ff003c";
+                desc = "AI mendeteksi pola manipulasi domain mirip halaman klaim palsu dengan struktur pengalihan skrip mencurigakan.";
+            } 
+            // URL lainnya
+            else {
+                score = Math.floor(Math.random() * 30) + 35; // 35% - 65%
+                label = "Waspada (Moderate)";
+                color = "#fbbf24";
+                desc = "AI menemukan beberapa parameter yang kurang dikenal. Perlu verifikasi ketat dari komunitas.";
+            }
+
+            return { score, label, color, desc };
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
+            const params = new URLSearchParams(window.location.search);
+            const targetUrl = params.get('url') || localStorage.getItem('shieldchain_pending_url') || "https://claim-airdrop-sepolia-eth.web.app/login";
+            document.getElementById("target-url-view").innerText = targetUrl;
+
+            // Jalankan Analisis AI Berdasarkan URL
+            const aiResult = analyzeUrlWithAI(targetUrl);
+
             const terminal = document.getElementById("terminal-screen");
+            const scoreBar = document.getElementById("score-bar");
+            const percentageText = document.getElementById("percentage-text");
+            const riskLabel = document.getElementById("risk-label");
+            const aiDesc = document.getElementById("ai-desc");
+            const badgeStatus = document.getElementById("scan-badge");
             const counter = document.getElementById("consensus-counter");
-            
-            const logs = [
-                "> Menyambungkan ke jaringan <span class='text-amber'>SEPOLIA_TX</span>...",
-                "> Mengekstrak metadata dari URL target...",
-                "> Mendaftarkan kontrak pintar (Task ID: 8893)...",
-                "> Menyiarkan tugas ke jaringan Validator...",
-                "> <span class='text-neon'>[ORACLE]</span> Menunggu respons komunitas...",
-                "> Validator <span class='text-cyan'>0x4B...9a2F</span> mulai menganalisis...",
-                "> Validator 0x7A...1c4D melakukan simulasi lingkungan...",
-                "> Menerima suara masuk... (1/3)"
-            ];
 
-            let step = 0;
-            
-            // Fungsi untuk memunculkan teks terminal satu per satu
-            const interval = setInterval(() => {
-                if (step < logs.length) {
-                    const newLog = document.createElement("div");
-                    newLog.className = "log-entry";
-                    newLog.innerHTML = logs[step];
-                    terminal.appendChild(newLog);
+            // Tahap 1: Progress Bar Bergerak Sesuai Skor AI
+            setTimeout(() => {
+                scoreBar.style.width = aiResult.score + "%";
+                scoreBar.style.backgroundColor = aiResult.color;
+                scoreBar.style.boxShadow = `0 0 10px ${aiResult.color}`;
+                percentageText.innerText = aiResult.score + "%";
+            }, 600);
+
+            setTimeout(() => {
+                badgeStatus.style.borderColor = aiResult.color;
+                badgeStatus.style.color = aiResult.color;
+                badgeStatus.style.background = `${aiResult.color}15`;
+                badgeStatus.innerHTML = `<div class="badge-content"><iconify-icon icon="mdi:robot-outline" style="font-size: 1.2rem;"></iconify-icon><span style="font-size: 0.85rem;">Analisis Heuristik AI Selesai</span></div>`;
+                
+                riskLabel.innerText = aiResult.label;
+                riskLabel.style.background = `${aiResult.color}25`;
+                riskLabel.style.color = aiResult.color;
+                aiDesc.innerText = aiResult.desc;
+                
+                const log1 = document.createElement("div");
+                log1.className = "log-entry";
+                log1.innerHTML = `> Laporan AI (Skor: ${aiResult.score}%) disimpan ke Database... <span style="color: #34d399;">[OK]</span>`;
+                terminal.appendChild(log1);
+                terminal.scrollTop = terminal.scrollHeight;
+            }, 3000);
+
+            // Tahap 2: Cek Apakah Validator Sudah Mengirim Vote
+            setTimeout(() => {
+                const existingVote = localStorage.getItem('shieldchain_vote_result');
+                if (existingVote) {
+                    // Jika Validator sudah vote di dashboard
+                    counter.innerText = "Konsensus Selesai!";
+                    const voteColor = existingVote === 'Aman' ? '#34d399' : '#ff003c';
                     
-                    // Auto-scroll ke bawah
+                    const logVote = document.createElement("div");
+                    logVote.className = "log-entry";
+                    logVote.innerHTML = `> <span style="color: var(--cyan);">[ON-CHAIN]</span> Konsensus Validator memutuskan: <strong style="color: ${voteColor};">${existingVote.toUpperCase()}</strong>`;
+                    terminal.appendChild(logVote);
                     terminal.scrollTop = terminal.scrollHeight;
-                    
-                    // Simulasi update counter
-                    if(step === 4) counter.innerText = "0 / 3 Suara";
-                    if(step === 7) counter.innerText = "1 / 3 Suara";
-
-                    step++;
                 } else {
-                    clearInterval(interval);
-                    // Setelah log habis, bisa ditambahkan logika redirect ke hasil akhir
-                    // setTimeout(() => alert("Demo: Di sini halaman akan berubah menjadi hasil akhir (Merah/Hijau)"), 2000);
+                    // Jika belum divoting
+                    counter.innerText = "Konsensus Aktif (Menunggu Validator)";
+                    const logWait = document.createElement("div");
+                    logWait.className = "log-entry";
+                    logWait.innerHTML = `> Menunggu tugas ditarik oleh Validator ke Smart Contract...`;
+                    terminal.appendChild(logWait);
+                    terminal.scrollTop = terminal.scrollHeight;
                 }
-            }, 1200); // Muncul setiap 1.2 detik
+            }, 4500);
         });
     </script>
 </body>

@@ -26,7 +26,6 @@
         }
         .toast-notification.show { transform: translateX(0); }
 
-        /* MODAL / POPUP WEB3 UI */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
@@ -71,11 +70,10 @@
 </head>
 <body>
 
-    <!-- MODAL 1: PILIH WALLET -->
     <div id="modal-wallet" class="modal-overlay">
         <div class="modal-box">
             <button class="modal-close" onclick="closeModal('modal-wallet')"><iconify-icon icon="mdi:close"></iconify-icon></button>
-            <h3 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Connect Wallet</h3>
+            <h3 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Connect Wallet (Privy)</h3>
             <div class="wallet-option" onclick="processWalletConnection()">
                 <iconify-icon icon="logos:metamask-icon" style="font-size: 2rem;"></iconify-icon>
                 <span style="font-weight: 600; font-size: 1.1rem;">MetaMask</span>
@@ -87,7 +85,6 @@
         </div>
     </div>
 
-    <!-- MODAL 2: PROFIL & DISCONNECT (SALDO TERHUBUNG DINAMIS) -->
     <div id="modal-profile" class="modal-overlay">
         <div class="modal-box" style="text-align: center;">
             <button class="modal-close" onclick="closeModal('modal-profile')"><iconify-icon icon="mdi:close"></iconify-icon></button>
@@ -108,7 +105,6 @@
         </div>
     </div>
 
-    <!-- MODAL 3: INPUT NOMINAL STAKING AKUMULATIF -->
     <div id="modal-stake" class="modal-overlay">
         <div class="modal-box">
             <button class="modal-close" onclick="closeModal('modal-stake')"><iconify-icon icon="mdi:close"></iconify-icon></button>
@@ -117,7 +113,7 @@
                 <h3 style="font-size: 1.2rem; margin-top: 0.5rem;">Tambah Staking Aset</h3>
             </div>
             
-            <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted);">Masukkan nominal tambahan untuk dikunci</p>
+            <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted);">Masukkan nominal tambahan untuk dikunci (Smart Contract)</p>
             
             <div class="stake-input-group">
                 <input type="number" id="custom-stake-amount" class="stake-input" value="0.500" step="0.1" min="0.1">
@@ -212,7 +208,7 @@
                     <iconify-icon icon="mdi:inbox-arrow-down" style="color: var(--cyan);"></iconify-icon> Antrean Verifikasi Aktif
                 </h3>
                 
-                <div class="card-glass" style="border-color: rgba(255, 255, 255, 0.1);">
+                <div class="card-glass" id="queue-card-container" style="border-color: rgba(255, 255, 255, 0.1);">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                         <div class="badge-waiting" id="badge-status" style="filter: grayscale(80%); opacity: 0.7;">
                             <div class="badge-content">
@@ -220,18 +216,18 @@
                                 <span id="badge-text">Akses Terkunci</span>
                             </div>
                         </div>
-                        <span style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Tugas #8892</span>
+                        <span style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;" id="task-id-label">Tugas dari Publik</span>
                     </div>
                     
                     <div id="url-locked-view" class="url-locked">
                         <iconify-icon icon="mdi:shield-lock-outline" style="font-size: 2.5rem; color: var(--cyan); opacity: 0.5;"></iconify-icon>
                         <div style="font-family: monospace; letter-spacing: 2px; color: #fff;">[ DATA TERENKRIPSI ]</div>
-                        <div style="font-size: 0.8rem;" id="lock-message">Hubungkan dompet Web3 untuk membuka data antrean.</div>
+                        <div style="font-size: 0.8rem;" id="lock-message">Hubungkan dompet Web3 untuk membuka data antrean laporan publik.</div>
                     </div>
 
                     <div id="url-unlocked-view" class="hidden">
-                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Target Tautan:</p>
-                        <div class="url-box">https://claim-airdrop-sepolia-eth.web.app/login</div>
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Target Tautan Laporan Pengunjung:</p>
+                        <div class="url-box" id="dynamic-target-url" style="color: var(--cyan);">https://claim-airdrop-sepolia-eth.web.app/login</div>
                     </div>
 
                     <div style="display: flex; gap: 0.75rem;">
@@ -260,7 +256,7 @@
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="ledger-table-body">
                             <tr>
                                 <td>#8891</td>
                                 <td><span class="badge-phishing">Phishing</span></td>
@@ -284,10 +280,17 @@
     <script>
         let walletConnected = false;
         let isStaked = false;
-        
-        // State Manajemen Keuangan (Frontend State)
-        let walletBalance = 10.000; // Saldo awal dompet validator (ETH)
-        let totalStakedAmount = 0.000; // Saldo awal yang di-stake
+        let walletBalance = 10.000;
+        let totalStakedAmount = 0.000;
+        let currentTaskUrl = "https://claim-airdrop-sepolia-eth.web.app/login";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedUrl = localStorage.getItem('shieldchain_pending_url');
+            if (savedUrl) {
+                currentTaskUrl = savedUrl;
+                document.getElementById('dynamic-target-url').innerText = savedUrl;
+            }
+        });
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
@@ -307,7 +310,7 @@
         function processWalletConnection() {
             closeModal('modal-wallet');
             setTimeout(() => {
-                showToast("MetaMask Terhubung: 0x4B...9a2F");
+                showToast("Privy Terhubung: 0x4B...9a2F");
                 walletConnected = true;
                 
                 document.getElementById("btn-connect").classList.add("hidden");
@@ -318,19 +321,19 @@
                 updateWalletDisplay();
 
                 const stakeStatus = document.getElementById("staking-status");
-                stakeStatus.innerHTML = `<iconify-icon icon="mdi:wallet-outline"></iconify-icon> Dompet terhubung. Silakan lakukan staking.`;
+                stakeStatus.innerHTML = `<iconify-icon icon="mdi:wallet-outline"></iconify-icon> Dompet terhubung via Privy.`;
                 stakeStatus.style.color = "var(--amber-400)";
-                document.getElementById("lock-message").innerText = "Lakukan staking untuk membuka data antrean.";
+                document.getElementById("lock-message").innerText = "Lakukan staking untuk membuka laporan link publik.";
             }, 500);
         }
 
         function disconnectWallet() {
             closeModal('modal-profile');
-            showToast("Dompet diputus dari jaringan", "mdi:logout");
+            showToast("Sesi dompet diputus", "mdi:logout");
             walletConnected = false;
             isStaked = false;
             totalStakedAmount = 0.000;
-            walletBalance = 10.000; // Reset saldo
+            walletBalance = 10.000;
 
             document.getElementById("btn-profile").classList.add("hidden");
             document.getElementById("btn-connect").classList.remove("hidden");
@@ -342,13 +345,13 @@
             document.getElementById("staking-status").style.color = "var(--text-muted)";
 
             document.getElementById("btn-stake").classList.add("btn-disabled");
-            document.querySelectorAll('.btn-phishing')[1].classList.add("btn-disabled"); // Tarik aset disable
+            document.querySelectorAll('.btn-phishing')[1].classList.add("btn-disabled");
             document.getElementById("reward-balance").innerText = "0.000 ETH";
             document.getElementById("accuracy-stat").innerText = "0.0%";
 
             document.getElementById("url-unlocked-view").classList.add("hidden");
             document.getElementById("url-locked-view").classList.remove("hidden");
-            document.getElementById("lock-message").innerText = "Hubungkan dompet Web3 untuk membuka data antrean.";
+            document.getElementById("lock-message").innerText = "Hubungkan dompet Web3 untuk membuka data antrean laporan publik.";
             
             const badge = document.getElementById("badge-status");
             badge.style.filter = "grayscale(80%)";
@@ -361,7 +364,6 @@
             document.getElementById("btn-vote-scam").classList.add("btn-disabled");
         }
 
-        // Logika Akumulasi Staking & Pemotongan Saldo Dompet
         function processStaking() {
             const inputVal = parseFloat(document.getElementById("custom-stake-amount").value);
             
@@ -382,15 +384,13 @@
             setTimeout(() => {
                 closeModal('modal-stake');
                 
-                // Kurangi Saldo Dompet & Tambahkan Akumulasi Staking
                 walletBalance -= inputVal;
                 totalStakedAmount += inputVal;
                 
                 updateWalletDisplay();
-                showToast(`Staking Berhasil! Ditambah ${inputVal.toFixed(3)} ETH`);
+                showToast(`Staking Smart Contract Berhasil (${inputVal.toFixed(3)} ETH)`);
                 isStaked = true;
 
-                // Update Tampilan Kartu Staking
                 const balance = document.getElementById("staking-balance");
                 balance.innerHTML = `${totalStakedAmount.toFixed(3)} <span style="font-size: 1.25rem; color: var(--cyan);">ETH</span>`;
                 balance.style.color = "#fff";
@@ -400,12 +400,10 @@
                 document.getElementById("accuracy-stat").innerText = "98.5%";
                 document.getElementById("accuracy-stat").style.color = "#fff";
 
-                document.getElementById("staking-status").innerHTML = `<iconify-icon icon="mdi:shield-check"></iconify-icon> Validator Aktif. Risiko slashing berlaku.`;
+                document.getElementById("staking-status").innerHTML = `<iconify-icon icon="mdi:shield-check"></iconify-icon> Validator Aktif.`;
 
-                // Aktifkan Tombol Tarik Aset
                 document.querySelectorAll('.btn-phishing')[1].classList.remove("btn-disabled");
 
-                // Buka Kunci URL
                 document.getElementById("url-locked-view").classList.add("hidden");
                 document.getElementById("url-unlocked-view").classList.remove("hidden");
                 
@@ -424,12 +422,11 @@
             }, 1200);
         }
 
-        // Fitur Tambahan: Tarik Aset (Withdraw) untuk mengembalikan saldo ke dompet
         function withdrawAssets() {
             if(!isStaked) return;
             
             walletBalance += totalStakedAmount;
-            showToast(`Berhasil menarik ${totalStakedAmount.toFixed(3)} ETH kembali ke dompet!`);
+            showToast(`Berhasil menarik ${totalStakedAmount.toFixed(3)} ETH kembali!`);
             totalStakedAmount = 0.000;
             isStaked = false;
 
@@ -439,13 +436,12 @@
             balance.innerHTML = `0.000 <span style="font-size: 1.25rem;">ETH</span>`;
             balance.style.color = "var(--text-muted)";
             
-            document.getElementById("staking-status").innerHTML = `<iconify-icon icon="mdi:wallet-outline"></iconify-icon> Dompet terhubung. Staking kosong.`;
+            document.getElementById("staking-status").innerHTML = `<iconify-icon icon="mdi:wallet-outline"></iconify-icon> Dompet terhubung.`;
             document.querySelectorAll('.btn-phishing')[1].classList.add("btn-disabled");
 
-            // Kunci kembali URL
             document.getElementById("url-unlocked-view").classList.add("hidden");
             document.getElementById("url-locked-view").classList.remove("hidden");
-            document.getElementById("lock-message").innerText = "Lakukan staking untuk membuka kembali data antrean.";
+            document.getElementById("lock-message").innerText = "Lakukan staking untuk membuka kembali laporan link publik.";
 
             const badge = document.getElementById("badge-status");
             badge.style.filter = "grayscale(80%)";
@@ -458,9 +454,43 @@
             document.getElementById("btn-vote-scam").classList.add("btn-disabled");
         }
 
+        // SIMPAN HASIL VOTING KE LOCALSTORAGE AGAR HALAMAN TRACKING BISA MEMBACANYA
         function submitVote(type) {
             if (!isStaked) return;
-            showToast(`Vote [${type}] sedang diproses on-chain!`, "mdi:cube-scan");
+
+            // Simpan status vote ke localStorage
+            localStorage.setItem('shieldchain_vote_result', type);
+
+            showToast(`Vote [${type}] berhasil dikirim ke Smart Contract on-chain!`, "mdi:cube-scan");
+
+            const tableBody = document.getElementById("ledger-table-body");
+            const newRow = document.createElement("tr");
+            
+            const badgeClass = type === 'Aman' ? 'badge-safe' : 'badge-phishing';
+            const randomTx = '0x' + Math.random().toString(16).substring(2, 8) + '...' + Math.random().toString(16).substring(2, 6);
+
+            newRow.innerHTML = `
+                <td>#8892</td>
+                <td><span class="${badgeClass}">${type}</span></td>
+                <td style="color: var(--cyan);">${randomTx}</td>
+                <td style="color: #34d399; display: flex; align-items: center; gap: 0.5rem;"><iconify-icon icon="mdi:check-circle"></iconify-icon> Confirmed</td>
+            `;
+            
+            tableBody.insertBefore(newRow, tableBody.firstChild);
+
+            const queueCard = document.getElementById("queue-card-container");
+            queueCard.style.opacity = "0.5";
+            document.getElementById("lock-message").innerText = "Tugas verifikasi ini telah selesai divoting.";
+            document.getElementById("url-unlocked-view").classList.add("hidden");
+            document.getElementById("btn-vote-aman").classList.add("btn-disabled");
+            document.getElementById("btn-vote-scam").classList.add("btn-disabled");
+            
+            const badge = document.getElementById("badge-status");
+            document.getElementById("badge-icon").setAttribute("icon", "mdi:check-circle");
+            document.getElementById("badge-icon").classList.remove("animate-spin");
+            document.getElementById("badge-text").innerText = "Selesai Voted";
+
+            localStorage.removeItem('shieldchain_pending_url');
         }
     </script>
 </body>
