@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dasbor Validator | ShieldChain</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+</head>
+<body>
+
+    <div class="navbar-wrapper container fade-up">
+        <nav class="navbar">
+            <div class="nav-left">
+                <a href="index.html" class="logo">
+                    <iconify-icon icon="mdi:shield-check" style="color: var(--cyan); font-size: 1.875rem;"></iconify-icon>
+                    <span class="desktop-only-text">Shield<span class="logo-highlight">Chain</span></span>
+                </a>
+                
+                <div class="badge-sepolia">
+                    <div class="badge-content">
+                        <iconify-icon icon="mdi:access-point-network" style="color: var(--amber-400); font-size: 0.875rem;"></iconify-icon>
+                        <span class="badge-text">Sepolia</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <ul class="nav-links">
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="dashboard.html" class="active">Dasbor Validator</a></li>
+                </ul>
+
+                <button class="btn-cyber desktop-only" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-main);">
+                    <iconify-icon icon="mdi:face-man-profile" style="font-size: 1.25rem; color: var(--cyan);"></iconify-icon>
+                    <span class="desktop-text" style="font-family: monospace;">0x4B...9a2F</span>
+                </button>
+                
+                <button class="hamburger" onclick="document.getElementById('mobileMenuDash').classList.toggle('active')">
+                    <iconify-icon icon="mdi:menu"></iconify-icon>
+                </button>
+            </div>
+
+            <div id="mobileMenuDash" class="mobile-menu">
+                <a href="index.html">Beranda</a>
+                <a href="dashboard.html">Dasbor Validator</a>
+                <button class="btn-cyber" style="width: 100%;">0x4B...9a2F</button>
+            </div>
+        </nav>
+    </div>
+
+    <main class="dash-layout container">
+        
+        <!-- SIDEBAR KIRI -->
+        <aside style="display: flex; flex-direction: column; gap: 1.5rem;" class="fade-up delay-1">
+            <div class="card-glass">
+                <!-- REVISI 4: Ikon Brankas Diletakkan Jauh di Kanan Bawah & Transparan -->
+                <iconify-icon icon="mdi:safe" class="safe-icon"></iconify-icon>
+                
+                <h2 class="card-title">Total Staking (Aset Uji)</h2>
+                <div class="stat-value">0.500 <span style="color: var(--cyan); font-size: 1.25rem;">ETH</span></div>
+                
+                <div style="font-size: 0.75rem; color: var(--amber-400); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                    <iconify-icon icon="mdi:alert-outline"></iconify-icon> Risiko slashing aktif jika voting manipulatif
+                </div>
+
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn-cyber" style="flex: 1; border-radius: 12px; padding: 0.75rem 0;">+ Stake</button>
+                    <button class="btn-cyber btn-phishing" style="flex: 1; border-radius: 12px; padding: 0.75rem 0; background: transparent; border: 1px solid rgba(255,0,60,0.5);">Tarik Aset</button>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="card-glass" style="padding: 1.25rem;">
+                    <div class="card-title" style="font-size: 0.75rem;">Total Reward</div>
+                    <div style="font-size: 1.25rem; font-weight: 700; color: #34d399;">+0.012 ETH</div>
+                </div>
+                <div class="card-glass" style="padding: 1.25rem;">
+                    <div class="card-title" style="font-size: 0.75rem;">Akurasi Voting</div>
+                    <div style="font-size: 1.25rem; font-weight: 700; color: #fff;">98.5%</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- KONTEN UTAMA KANAN -->
+        <section style="display: flex; flex-direction: column; gap: 2rem;" class="fade-up delay-2">
+            
+            <div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    <iconify-icon icon="mdi:inbox-arrow-down" style="color: var(--cyan);"></iconify-icon> Antrean Verifikasi
+                </h3>
+                
+                <div class="card-glass" style="border-color: rgba(0, 240, 255, 0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div class="badge-waiting">
+                            <div class="badge-content">
+                                <iconify-icon icon="mdi:loading" class="animate-spin" style="font-size: 1rem;"></iconify-icon>
+                                <span>Menunggu Voting</span>
+                            </div>
+                        </div>
+                        <span style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Tugas #8892</span>
+                    </div>
+                    
+                    <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Target Tautan:</p>
+                    <div class="url-box">
+                        https://claim-airdrop-sepolia-eth.web.app/login
+                    </div>
+
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button class="btn-cyber" style="flex: 1; border-radius: 12px; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399;">
+                            <iconify-icon icon="mdi:check-decagram" style="font-size: 1.25rem;"></iconify-icon> Link Aman
+                        </button>
+                        <button class="btn-cyber btn-phishing" style="flex: 1; border-radius: 12px;">
+                            <iconify-icon icon="mdi:skull-scan" style="font-size: 1.25rem;"></iconify-icon> Phishing / Scam
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    <iconify-icon icon="mdi:format-list-bulleted" style="color: var(--neon);"></iconify-icon> Jejak Keputusan On-Chain
+                </h3>
+                
+                <div class="table-container">
+                    <table class="cyber-table">
+                        <thead>
+                            <tr>
+                                <th>Tugas</th>
+                                <th>Keputusan Anda</th>
+                                <th>Tx Hash</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#8891</td>
+                                <td><span class="badge-phishing">Phishing</span></td>
+                                <td style="color: var(--cyan); cursor: pointer;">0x9f2c...e1b0</td>
+                                <td style="color: #34d399; display: flex; align-items: center; gap: 0.5rem;"><iconify-icon icon="mdi:check-circle"></iconify-icon> Confirmed</td>
+                            </tr>
+                            <tr>
+                                <td>#8889</td>
+                                <td><span class="badge-safe">Aman</span></td>
+                                <td style="color: var(--cyan); cursor: pointer;">0x3a1b...d99f</td>
+                                <td style="color: #34d399; display: flex; align-items: center; gap: 0.5rem;"><iconify-icon icon="mdi:check-circle"></iconify-icon> Confirmed</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+</body>
+</html>

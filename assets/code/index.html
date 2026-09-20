@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milestone Pilot | ShieldChain</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+</head>
+<body>
+
+    <div class="navbar-wrapper container fade-up">
+        <nav class="navbar">
+            <div class="nav-left">
+                <a href="index.html" class="logo">
+                    <iconify-icon icon="mdi:shield-check" style="color: var(--cyan); font-size: 1.875rem;"></iconify-icon>
+                    <span class="desktop-only-text">Shield<span class="logo-highlight">Chain</span></span>
+                </a>
+                
+                <div class="badge-sepolia">
+                    <div class="badge-content">
+                        <iconify-icon icon="mdi:access-point-network" style="color: var(--amber-400); font-size: 0.875rem;"></iconify-icon>
+                        <span class="badge-text">Sepolia</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <ul class="nav-links">
+                    <li><a href="index.html" class="active">Beranda</a></li>
+                    <li><a href="dashboard.html">Dasbor Validator</a></li>
+                </ul>
+
+                <button class="btn-cyber desktop-only">
+                    <iconify-icon icon="mdi:wallet" style="font-size: 1.125rem;"></iconify-icon>
+                    <span class="desktop-text">Connect Wallet</span>
+                </button>
+                
+                <button class="hamburger" onclick="document.getElementById('mobileMenu').classList.toggle('active')">
+                    <iconify-icon icon="mdi:menu"></iconify-icon>
+                </button>
+            </div>
+
+            <div id="mobileMenu" class="mobile-menu">
+                <a href="index.html">Beranda</a>
+                <a href="dashboard.html">Dasbor Validator</a>
+                <button class="btn-cyber" style="width: 100%;">Connect Wallet</button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <header class="hero container">
+        <div class="hero-text fade-up delay-1">
+            <div class="tagline">
+                Sistem Otonom & Transparan
+            </div>
+            <h1 class="hero-title">Amankan Komunitas<br>dari <span class="text-outline">Tautan Phishing</span></h1>
+            <p class="hero-desc">Verifikasi tautan secara off-chain dengan mekanisme staking dan validasi on-chain. Tanpa perantara, murni kekuatan komunitas.</p>
+            
+            <div class="scanner-box fade-up delay-2">
+                <iconify-icon icon="mdi:link-variant" class="scanner-icon"></iconify-icon>
+                <input type="url" placeholder="Tempel tautan Telegram / Web..." class="scanner-input">
+                <a href="dashboard.html" class="btn-cyber large">
+                    <iconify-icon icon="mdi:radar" style="font-size: 1.25rem; animation: spin-slow 10s linear infinite;"></iconify-icon>
+                    Scan
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-visual fade-up delay-2">
+            <iconify-icon icon="ph:shield-check-duotone" class="shield-center"></iconify-icon>
+            <div class="ouroboros-ring"></div>
+            <div class="dashed-ring"></div>
+            <div class="orbit-container">
+                <iconify-icon icon="mdi:hexagon-multiple-outline" class="orbit-icon-top"></iconify-icon>
+                <iconify-icon icon="mdi:link" class="orbit-icon-bottom"></iconify-icon>
+            </div>
+        </div>
+    </header>
+
+    <!-- SECTION CARA KERJA (NYARCH DOCK INTERACTIVE) -->
+    <section class="cara-kerja container fade-up delay-3">
+        <h2 class="section-title">Bagaimana Sistem Ini Bekerja?</h2>
+        
+        <div class="interactive-dock-wrapper">
+            
+            <!-- Nyarch-style Dock -->
+            <div class="dock-container">
+                <div class="dock-item active" onmouseover="showStep(1)" onclick="showStep(1)">
+                    <span class="dock-tooltip">Laporkan</span>
+                    <iconify-icon icon="mdi:link-variant-plus"></iconify-icon>
+                </div>
+                <div class="dock-item" onmouseover="showStep(2)" onclick="showStep(2)">
+                    <span class="dock-tooltip">Konsensus</span>
+                    <iconify-icon icon="mdi:gavel"></iconify-icon>
+                </div>
+                <div class="dock-item" onmouseover="showStep(3)" onclick="showStep(3)">
+                    <span class="dock-tooltip">On-Chain</span>
+                    <iconify-icon icon="mdi:cube-scan"></iconify-icon>
+                </div>
+            </div>
+
+            <!-- Dynamic Display Area -->
+            <div class="step-display-area">
+                
+                <div id="step-1" class="step-content active">
+                    <div class="step-number-bg">01</div>
+                    <h3>Laporkan Tautan</h3>
+                    <p>Pengguna menyalin tautan yang mencurigakan ke dalam pemindai, kemudian sistem mendaftarkannya ke dalam antrean jaringan untuk divalidasi oleh komunitas.</p>
+                </div>
+                
+                <div id="step-2" class="step-content">
+                    <div class="step-number-bg">02</div>
+                    <h3>Konsensus Validator</h3>
+                    <p>Anggota komunitas yang melakukan staking (Validator) akan membedah secara teknis dan melakukan pemungutan suara (Aman atau Phishing) berdasarkan analisis mereka.</p>
+                </div>
+                
+                <div id="step-3" class="step-content">
+                    <div class="step-number-bg">03</div>
+                    <h3>Rekam On-Chain</h3>
+                    <p>Hasil pemungutan suara mayoritas dieksekusi secara permanen di blockchain. Validator jujur diberi imbalan (reward), validator curang terkena penalti (slashing).</p>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <!-- Script Sederhana untuk Interaksi Dock -->
+    <script>
+        function showStep(stepIndex) {
+            // Hapus kelas 'active' dari semua ikon dock
+            document.querySelectorAll('.dock-item').forEach((item, index) => {
+                item.classList.toggle('active', index === stepIndex - 1);
+            });
+            
+            // Tampilkan/Sembunyikan konten penjelasan yang sesuai
+            document.querySelectorAll('.step-content').forEach((content, index) => {
+                content.classList.toggle('active', index === stepIndex - 1);
+            });
+        }
+    </script>
+</body>
+</html>
