@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Tautan | ShieldChain</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        /* CSS Tambahan Khusus untuk Halaman Tracking */
+        .tracking-layout {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; padding-top: 100px; padding-bottom: 4rem;
+        }
+        .radar-container {
+            position: relative; width: 120px; height: 120px; margin: 0 auto 2rem;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .radar-ring {
+            position: absolute; width: 100%; height: 100%;
+            border: 2px dashed var(--cyan); border-radius: 50%;
+            animation: spin-slow 8s linear infinite; opacity: 0.8;
+        }
+        .radar-ring-inner {
+            position: absolute; width: 70%; height: 70%;
+            border: 2px solid transparent; border-top: 2px solid var(--neon); border-bottom: 2px solid var(--neon);
+            border-radius: 50%; animation: spin-reverse 4s linear infinite;
+        }
+        .terminal-log {
+            background: rgba(0, 0, 0, 0.7); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 1.5rem; font-family: monospace;
+            color: var(--text-muted); font-size: 0.85rem; height: 150px;
+            overflow-y: hidden; position: relative; text-align: left;
+            box-shadow: inset 0 0 20px rgba(0,240,255,0.05);
+        }
+        .terminal-log::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 40px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+        }
+        .log-entry { margin-bottom: 0.5rem; opacity: 0; animation: fadeInLog 0.3s forwards; }
+        .text-neon { color: var(--neon); }
+        .text-amber { color: var(--amber-400); }
+        @keyframes fadeInLog { to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow"></div>
+
+    <!-- NAVBAR (Versi Publik Tanpa Connect Wallet) -->
+    <div class="navbar-wrapper container fade-up">
+        <nav class="navbar">
+            <div class="nav-left">
+                <a href="index.html" class="logo">
+                    <iconify-icon icon="mdi:shield-check" style="color: var(--cyan); font-size: 1.875rem;"></iconify-icon>
+                    <span class="desktop-only-text">Shield<span class="logo-highlight">Chain</span></span>
+                </a>
+                <div class="badge-sepolia">
+                    <div class="badge-content">
+                        <iconify-icon icon="mdi:access-point-network" style="color: var(--amber-400); font-size: 0.875rem;"></iconify-icon>
+                        <span class="badge-text">Sepolia</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <ul class="nav-links">
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="dashboard.html">Dasbor Validator</a></li>
+                </ul>
+                <button class="hamburger" onclick="document.getElementById('mobileMenu').classList.toggle('active')">
+                    <iconify-icon icon="mdi:menu"></iconify-icon>
+                </button>
+            </div>
+
+            <!-- Dropdown Menu HP -->
+            <div id="mobileMenu" class="mobile-menu">
+                <a href="index.html">Beranda</a>
+                <a href="dashboard.html">Dasbor Validator</a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN TRACKING CONTENT -->
+    <main class="container tracking-layout">
+        
+        <div class="card-glass fade-up delay-1" style="max-width: 700px; width: 100%; text-align: center; padding: 3rem 2rem;">
+            
+            <!-- Animasi Radar Pemindai -->
+            <div class="radar-container">
+                <div class="radar-ring"></div>
+                <div class="radar-ring-inner"></div>
+                <iconify-icon icon="mdi:radar" style="font-size: 3rem; color: var(--cyan); animation: pulse-glow 2s infinite alternate;"></iconify-icon>
+            </div>
+
+            <!-- Status Header -->
+            <div class="badge-waiting" style="margin-bottom: 1.5rem;">
+                <div class="badge-content">
+                    <iconify-icon icon="mdi:loading" class="animate-spin" style="font-size: 1.2rem;"></iconify-icon>
+                    <span style="font-size: 0.9rem;">Analisis Sedang Berlangsung</span>
+                </div>
+            </div>
+
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Memverifikasi Target</h2>
+            <div class="url-box" style="display: inline-block; padding: 0.5rem 1.5rem; margin-bottom: 2rem;">
+                https://claim-airdrop-sepolia-eth.web.app/login
+            </div>
+
+            <!-- Grid Metrik -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; text-align: left;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">Status Antrean</div>
+                    <div style="font-family: monospace; font-size: 1.2rem; color: var(--cyan);">Tugas #8893</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">Konsensus Validator</div>
+                    <div style="font-family: monospace; font-size: 1.2rem; color: #fbbf24;" id="consensus-counter">0 / 3 Suara</div>
+                </div>
+            </div>
+
+            <!-- Terminal Log Simulasi -->
+            <div class="terminal-log" id="terminal-screen">
+                <div class="log-entry">> Inisialisasi ShieldChain Protocol... <span style="color: #34d399;">[OK]</span></div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Script Simulasi Real-time untuk Demo Hackathon -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const terminal = document.getElementById("terminal-screen");
+            const counter = document.getElementById("consensus-counter");
+            
+            const logs = [
+                "> Menyambungkan ke jaringan <span class='text-amber'>SEPOLIA_TX</span>...",
+                "> Mengekstrak metadata dari URL target...",
+                "> Mendaftarkan kontrak pintar (Task ID: 8893)...",
+                "> Menyiarkan tugas ke jaringan Validator...",
+                "> <span class='text-neon'>[ORACLE]</span> Menunggu respons komunitas...",
+                "> Validator <span class='text-cyan'>0x4B...9a2F</span> mulai menganalisis...",
+                "> Validator 0x7A...1c4D melakukan simulasi lingkungan...",
+                "> Menerima suara masuk... (1/3)"
+            ];
+
+            let step = 0;
+            
+            // Fungsi untuk memunculkan teks terminal satu per satu
+            const interval = setInterval(() => {
+                if (step < logs.length) {
+                    const newLog = document.createElement("div");
+                    newLog.className = "log-entry";
+                    newLog.innerHTML = logs[step];
+                    terminal.appendChild(newLog);
+                    
+                    // Auto-scroll ke bawah
+                    terminal.scrollTop = terminal.scrollHeight;
+                    
+                    // Simulasi update counter
+                    if(step === 4) counter.innerText = "0 / 3 Suara";
+                    if(step === 7) counter.innerText = "1 / 3 Suara";
+
+                    step++;
+                } else {
+                    clearInterval(interval);
+                    // Setelah log habis, bisa ditambahkan logika redirect ke hasil akhir
+                    // setTimeout(() => alert("Demo: Di sini halaman akan berubah menjadi hasil akhir (Merah/Hijau)"), 2000);
+                }
+            }, 1200); // Muncul setiap 1.2 detik
+        });
+    </script>
+</body>
+</html>
