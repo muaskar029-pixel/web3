@@ -9,7 +9,7 @@ Frontend MVP intelijen risiko Web3 untuk pengguna Indonesia. Pengunjung dapat me
 Gunakan Node.js 22.16+ (disarankan Node.js 24 atau lebih baru) dan pnpm 12.5.1.
 
 ```bash
-cd /home/.trash/Projects/WEB3/vibecoding
+cd web3
 npx --yes pnpm@12.5.1 install --frozen-lockfile
 npx --yes pnpm@12.5.1 dev
 ```
@@ -87,8 +87,8 @@ public/images/        Aset visual lokal
 - Pilihan vote menentukan reward/slashing tetap sesuai dokumen hackathon. Aturan ini tidak menilai benar/salah berdasarkan bukti nyata.
 - Tidak ada unggahan berkas atau seed phrase. Alamat EVM belum dibedakan sebagai wallet versus kontrak tanpa RPC.
 
-Dokumen proyek asli dipertahankan. Brief utama pada root berhenti di awal bagian 7; master prompt dan empat file alur melengkapi scope.
+Dokumen proyek asli kini dipindahkan dan dirapikan di dalam folder `docs/specs/` dan `docs/design/`.
 
-Lihat [arsitektur](docs/architecture.md), [alur pengguna](docs/user-flow.md), [sistem desain](docs/design-system.md), [integrasi berikutnya](docs/future-integration.md), dan [hasil QA](docs/qa/verification.md).
+Lihat [arsitektur](docs/specs/architecture.md), [alur pengguna](docs/specs/user-flow.md), [sistem desain](docs/design/design-system.md), [integrasi berikutnya](docs/specs/future-integration.md), dan [hasil QA](docs/qa/verification.md).
 
 Fondasi framework dan komponen mengikuti [dokumentasi instalasi Next.js](https://nextjs.org/docs/app/getting-started/installation) dan [shadcn untuk Next.js](https://ui.shadcn.com/docs/installation/next).
