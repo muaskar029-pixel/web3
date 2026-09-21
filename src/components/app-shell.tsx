@@ -47,80 +47,22 @@ export function Brand() {
   );
 }
 
+import { usePrivy } from "@privy-io/react-auth";
+
 export function WalletButton({ label = "Connect Wallet" }: { label?: string }) {
-  const { data, ready } = useStore();
-  const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const notify = useNotify();
-  async function connect() {
-    setBusy(true);
-    setError("");
-    try {
-      if (data.wallet.connected) await walletAdapter.disconnect();
-      else await walletAdapter.connect();
-      setOpen(false);
-      notify(
-        data.wallet.connected
-          ? "Wallet simulasi diputus. Saldo dan stake tetap tersimpan."
-          : "Wallet simulasi terhubung. Tidak ada aset nyata yang digunakan.",
-      );
-    } catch (error) {
-      setError(messageOf(error));
-    } finally {
-      setBusy(false);
-    }
-  }
+  const { ready, authenticated, user, login, logout } = usePrivy();
+  
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="wallet-button">
-          <Wallet size={16} />
-          {ready && data.wallet.connected
-            ? short(data.wallet.address!, 4)
-            : label}
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {data.wallet.connected
-              ? "Wallet simulasi"
-              : "Coba dengan wallet simulasi"}
-          </DialogTitle>
-          <DialogDescription>
-            Tidak perlu ekstensi atau aset nyata. Semua saldo dan transaksi
-            hanya tersimpan di browser ini.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="wallet-preview">
-          <Wallet size={28} />
-          <div>
-            <strong>
-              {data.wallet.connected
-                ? short(data.wallet.address!, 6)
-                : "Dompet demo ShieldChain"}
-            </strong>
-            <p>
-              {data.wallet.address ? eth(data.wallet.balance) : "10.00"} ETH
-              simulasi tersedia
-            </p>
-          </div>
-          <span className="badge simulation">Simulasi</span>
-        </div>
-        <p className="muted text-sm">
-          ShieldChain tidak meminta seed phrase atau private key.
-        </p>
-        {error && <ErrorState message={error} />}
-        <Button onClick={connect} disabled={busy}>
-          {busy
-            ? "Memproses..."
-            : data.wallet.connected
-              ? "Putuskan koneksi"
-              : "Hubungkan wallet demo"}
-        </Button>
-      </DialogContent>
-    </Dialog>
+    <Button 
+      variant="outline" 
+      onClick={authenticated ? logout : login}
+      disabled={!ready}
+    >
+      <Wallet size={16} className="mr-2" />
+      {authenticated && user?.wallet?.address 
+        ? short(user.wallet.address, 4) 
+        : label}
+    </Button>
   );
 }
 

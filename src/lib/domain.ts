@@ -1,54 +1,31 @@
 import { z } from "zod";
 
-export const caseStatuses = [
-  "submitted",
-  "analyzing",
-  "awaiting_validation",
-  "voting",
-  "consensus_reached",
-  "failed",
-] as const;
 export const voteSchema = z.enum(["Aman", "Phishing"]);
 export type Vote = z.infer<typeof voteSchema>;
-export type CaseStatus = (typeof caseStatuses)[number];
 export type RiskLevel = "low" | "medium" | "high";
 
-const evidenceSchema = z.object({
-  title: z.string(),
-  detail: z.string(),
-  source: z.enum(["heuristic", "community"]),
-  severity: z.enum(["low", "medium", "high"]),
-});
 const dimensionSchema = z.object({
   score: z.number().int().min(0).max(100),
   level: z.enum(["low", "medium", "high"]),
-  summary: z.string(),
-  evidence: z.array(evidenceSchema),
-  confidence: z.number().min(0).max(100),
+  evidence: z.array(z.string()),
 });
-export const assessmentSchema = z.object({
-  technicalRisk: dimensionSchema,
-  socialRisk: dimensionSchema,
-  shariaRisk: dimensionSchema,
+const shariaDimensionSchema = dimensionSchema.extend({
+  disclaimer: z.string(),
 });
-export type Assessment = z.infer<typeof assessmentSchema>;
+
 export type RiskDimension = z.infer<typeof dimensionSchema>;
-export type RiskEvidence = z.infer<typeof evidenceSchema>;
 
 export const caseSchema = z.object({
   id: z.string(),
   target: z.string(),
-  targetType: z.enum(["url", "domain", "wallet", "contract", "group"]),
-  status: z.enum(caseStatuses),
-  communityStatus: z.enum(["queued", "voting", "completed"]),
+  targetType: z.enum(["url", "wallet", "contract", "group"]),
+  technicalRisk: dimensionSchema,
+  socialRisk: dimensionSchema,
+  shariaRisk: shariaDimensionSchema,
+  status: z.enum(["pending", "on-chain", "resolved"]),
+  txHash: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  assessment: assessmentSchema.nullable(),
-  vote: voteSchema.nullable(),
-  timeline: z.array(z.object({ status: z.enum(caseStatuses), at: z.string() })),
-  reports: z.array(
-    z.object({ id: z.string(), text: z.string(), createdAt: z.string() }),
-  ),
 });
 export type RiskCase = z.infer<typeof caseSchema>;
 
@@ -98,13 +75,10 @@ export const initialState: AppState = {
   lastVoteCaseId: null,
 };
 
-export const statusLabels: Record<CaseStatus, string> = {
-  submitted: "Target diterima",
-  analyzing: "Analisis berlangsung",
-  awaiting_validation: "Menunggu validasi",
-  voting: "Voting berlangsung",
-  consensus_reached: "Voting selesai",
-  failed: "Analisis gagal",
+export const statusLabels: Record<RiskCase["status"], string> = {
+  pending: "Menunggu Validasi",
+  "on-chain": "Sedang Diproses On-chain",
+  resolved: "Selesai",
 };
 export const voteLabels: Record<Vote, string> = {
   Aman: "Tidak ditemukan indikasi utama",
@@ -117,7 +91,6 @@ export const riskLabels: Record<RiskLevel, string> = {
 };
 export const typeLabels: Record<RiskCase["targetType"], string> = {
   url: "Tautan situs",
-  domain: "Domain",
   wallet: "Alamat EVM",
   contract: "Smart contract",
   group: "Grup investasi",

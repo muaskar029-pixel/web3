@@ -2,3 +2,9 @@ allowBuilds:
   unrs-resolver: true
   sharp: true
   esbuild: true
+  '@google/genai': true
+  '@reown/appkit': true
+  bufferutil: true
+  keccak: true
+  protobufjs: true
+  utf-8-validate: true

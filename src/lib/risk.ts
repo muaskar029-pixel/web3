@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Assessment, RiskCase, RiskDimension, RiskLevel } from "./domain";
+import type { RiskCase, RiskDimension, RiskLevel } from "./domain";
 
 export function identifyTarget(value: string): RiskCase["targetType"] {
   if (/^0x[a-fA-F0-9]{40}$/.test(value)) return "wallet";
@@ -64,7 +64,7 @@ export const riskLevel = (score: number): RiskLevel =>
   score < 30 ? "low" : score < 70 ? "medium" : "high";
 
 // ponytail: keyword-only demo, replace this service with verified signals before real risk use.
-export function assessRisk(target: string): Assessment {
+export function assessRisk(target: string): Pick<RiskCase, "technicalRisk" | "socialRisk" | "shariaRisk"> {
   const input = target.toLowerCase();
   const institutional = ["gov", "edu", "komdigi", "ui.ac.id"].find((word) =>
     input.includes(word),
@@ -141,13 +141,12 @@ export function createCase(
     id: crypto.randomUUID(),
     target,
     targetType: identifyTarget(target),
-    status: "submitted",
-    communityStatus: "queued",
+    status: "pending",
     createdAt: now,
     updatedAt: now,
-    assessment: null,
-    vote: null,
-    timeline: [{ status: "submitted", at: now }],
-    reports: [],
+    technicalRisk: { score: 0, level: "low", evidence: [] },
+    socialRisk: { score: 0, level: "low", evidence: [] },
+    shariaRisk: { score: 0, level: "low", evidence: [], disclaimer: "" },
+    txHash: null,
   };
 }

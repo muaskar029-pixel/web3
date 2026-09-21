@@ -39,6 +39,8 @@ import {
   voteLabels,
 } from "@/lib/domain";
 import { blockchainService, MIN_STAKE } from "@/lib/services";
+import { useWriteContract } from 'wagmi';
+import ShieldChainABI from '@/lib/web3/contracts/ShieldChain.json';
 
 export function CaseScreen({ caseId }: { caseId: string }) {
   const { data, ready, error: storageError } = useStore();
@@ -51,16 +53,31 @@ export function CaseScreen({ caseId }: { caseId: string }) {
   const item = data.cases.find((entry) => entry.id === caseId);
   const transaction = data.ledger.find((entry) => entry.caseId === caseId);
   const active = data.wallet.connected && data.wallet.staked >= MIN_STAKE;
+
+  const { writeContractAsync } = useWriteContract();
+
   async function vote() {
     if (!choice) return;
     setBusy(true);
     setError("");
     try {
-      await blockchainService.vote(caseId, choice);
+      // P0 fallback: Call wagmi writeContract
+      const txHash = await writeContractAsync({
+        address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`,
+        abi: ShieldChainABI,
+        functionName: 'voteOnReport',
+        args: [caseId, choice === "Phishing" ? 1 : 0],
+      });
+
+      // Task 5: Call PATCH /api/update-status
+      await fetch('/api/update-status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ caseId, txHash }),
+      });
+
       setConfirm(false);
-      notify(
-        "Vote simulasi tercatat. Tracker dan public ledger sudah diperbarui.",
-      );
+      notify("Vote on-chain tercatat.");
     } catch (error) {
       setError(messageOf(error));
     } finally {
@@ -111,50 +128,21 @@ export function CaseScreen({ caseId }: { caseId: string }) {
         <h1>Telaah bukti. Berikan penilaian.</h1>
         <p className="target-title">{item.target}</p>
       </div>
-      {!item.assessment ? (
-        <EmptyState
-          title="Analisis belum selesai"
-          description="Buka laporan untuk menyelesaikan analisis sebelum memberikan vote."
-        >
-          <Button asChild>
-            <Link href={`/tracking?case=${item.id}`}>
-              Buka Laporan
-              <ArrowRight size={15} />
-            </Link>
-          </Button>
-        </EmptyState>
-      ) : (
-        <>
-          <RiskScores assessment={item.assessment} />
-          <ShariaNote />
-          <div className="report-layout">
-            <section className="panel">
-              <div className="section-title">
-                <h2>Bukti analisis</h2>
-                <span className="badge neutral">Kualitas data terbatas</span>
-              </div>
-              <p className="section-description muted">
-                Sumber: heuristik simulasi. Belum ada bukti on-chain yang
-                diverifikasi.
-              </p>
-              <EvidenceList assessment={item.assessment} />
-              <div className="community-reports">
-                <h3>Riwayat laporan komunitas</h3>
-                {item.reports.length ? (
-                  item.reports.map((report) => (
-                    <article key={report.id}>
-                      <span className="badge neutral">Belum diverifikasi</span>
-                      <p>{report.text}</p>
-                      <time>{dateTime(report.createdAt)}</time>
-                    </article>
-                  ))
-                ) : (
-                  <p className="muted">
-                    Belum ada evidence tambahan dari komunitas.
-                  </p>
-                )}
-              </div>
-              <Link className="text-link" href={`/tracking?case=${item.id}`}>
+      </div>
+      <RiskScores caseItem={item} />
+      <ShariaNote />
+      <div className="report-layout">
+        <section className="panel">
+          <div className="section-title">
+            <h2>Bukti analisis</h2>
+            <span className="badge neutral">Kualitas data terbatas</span>
+          </div>
+          <p className="section-description muted">
+            Sumber: heuristik simulasi. Belum ada bukti on-chain yang
+            diverifikasi.
+          </p>
+          <EvidenceList caseItem={item} />
+        </section>
                 Buka Laporan
                 <ArrowRight size={15} />
               </Link>
@@ -265,8 +253,6 @@ export function CaseScreen({ caseId }: { caseId: string }) {
             </section>
           </div>
           <DisclaimerBanner />
-        </>
-      )}
       <Dialog
         open={confirm}
         onOpenChange={(value) => {

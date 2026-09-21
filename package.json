@@ -29,7 +29,14 @@
     "react-dom": "latest",
     "react-hook-form": "latest",
     "tailwind-merge": "latest",
-    "zod": "latest"
+    "zod": "latest",
+    "@privy-io/react-auth": "latest",
+    "viem": "latest",
+    "wagmi": "latest",
+    "@tanstack/react-query": "latest",
+    "drizzle-orm": "latest",
+    "@neondatabase/serverless": "latest",
+    "@google/genai": "latest"
   },
   "devDependencies": {
     "@axe-core/playwright": "latest",
@@ -46,6 +53,7 @@
     "tailwindcss": "latest",
     "tw-animate-css": "latest",
     "typescript": "^6.0.0",
-    "vitest": "latest"
+    "vitest": "latest",
+    "drizzle-kit": "latest"
   }
 }

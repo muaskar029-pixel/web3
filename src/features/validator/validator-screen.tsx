@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
+import { useId, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -173,11 +173,23 @@ function ValidatorStats({ data }: { data: AppState }) {
 
 export function ValidatorScreen() {
   const { data, ready, error } = useStore();
+  const [apiQueue, setApiQueue] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchQueue = () => {
+      fetch("/api/queue")
+        .then(res => res.json())
+        .then(setApiQueue)
+        .catch(console.error);
+    };
+    fetchQueue();
+    const interval = setInterval(fetchQueue, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   if (!ready) return <PageSkeleton />;
   const active = data.wallet.connected && data.wallet.staked >= MIN_STAKE;
-  const queue = data.cases.filter(
-    (item) => item.status === "awaiting_validation",
-  );
+  const queue = apiQueue;
   return (
     <div className="page-container">
       <div className="page-heading report-heading">

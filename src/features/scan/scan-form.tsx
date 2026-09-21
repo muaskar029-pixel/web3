@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ErrorState } from "@/components/feedback";
 import { scanSchema } from "@/lib/risk";
-import { riskService } from "@/lib/services";
 import { messageOf } from "@/lib/domain";
 
 const examples = [
@@ -48,8 +47,14 @@ export function ScanForm() {
   async function scan(values: { target: string }) {
     setError("");
     try {
-      const caseId = await riskService.submit(values.target);
-      router.push(`/tracking?case=${caseId}`);
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: values.target, targetType: "url" }), // Default to URL, backend will handle or we can parse.
+      });
+      if (!res.ok) throw new Error("Gagal memproses target");
+      const data = await res.json();
+      router.push(`/tracking?case=${data.id}`);
     } catch (error) {
       setError(messageOf(error));
     }

@@ -1,7 +1,6 @@
 import { z } from "zod";
 import {
   type AppState,
-  type CaseStatus,
   type Vote,
   voteSchema,
 } from "./domain";
@@ -51,7 +50,7 @@ export function applyStake(state: AppState, amount: number): AppState {
   };
 }
 
-function transition(state: AppState, id: string, status: CaseStatus): AppState {
+function transition(state: AppState, id: string, status: any): AppState {
   const now = new Date().toISOString();
   return {
     ...state,
@@ -141,64 +140,6 @@ export function applyVote(
   };
 }
 
-export const riskService = {
-  async submit(input: string) {
-    const item = createCase(input);
-    await storage.update((state) => ({
-      ...state,
-      cases: [item, ...state.cases],
-      pendingCaseId: item.id,
-    }));
-    return item.id;
-  },
-  async analyze(id: string) {
-    await storage.update((state) => {
-      const item = state.cases.find((entry) => entry.id === id);
-      return item && ["submitted", "failed"].includes(item.status)
-        ? transition(state, id, "analyzing")
-        : state;
-    });
-    await pause(900);
-    await storage.update((state) => {
-      const item = state.cases.find((entry) => entry.id === id);
-      if (!item || item.status !== "analyzing") return state;
-      const assessed = {
-        ...state,
-        cases: state.cases.map((entry) =>
-          entry.id === id
-            ? { ...entry, assessment: assessRisk(entry.target) }
-            : entry,
-        ),
-      };
-      return transition(assessed, id, "awaiting_validation");
-    });
-  },
-  async addEvidence(id: string, text: string) {
-    const report = reportSchema.parse(text);
-    await storage.update((state) => {
-      if (!state.cases.some((item) => item.id === id))
-        throw new Error("Kasus tidak ditemukan.");
-      return {
-        ...state,
-        cases: state.cases.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                reports: [
-                  ...item.reports,
-                  {
-                    id: crypto.randomUUID(),
-                    text: report,
-                    createdAt: new Date().toISOString(),
-                  },
-                ],
-              }
-            : item,
-        ),
-      };
-    });
-  },
-};
 
 export interface WalletAdapter {
   connect(): Promise<void>;

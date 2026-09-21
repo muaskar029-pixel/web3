@@ -1,0 +1,12 @@
+[
+  {
+    "inputs": [
+      { "internalType": "string", "name": "caseId", "type": "string" },
+      { "internalType": "uint8", "name": "vote", "type": "uint8" }
+    ],
+    "name": "voteOnReport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

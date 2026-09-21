@@ -40,7 +40,6 @@ import {
   statusLabels,
   typeLabels,
 } from "@/lib/domain";
-import { riskService } from "@/lib/services";
 
 const stages = [
   "Memvalidasi target",
@@ -50,115 +49,33 @@ const stages = [
   "Menyusun evidence",
   "Mengantrekan validasi komunitas",
 ];
-export function AnalysisProgress() {
-  return (
-    <section
-      className="panel analysis-progress"
-      role="status"
-      aria-live="polite"
-    >
-      <ScanLine size={36} />
-      <h2>Menyusun laporan risikomu</h2>
-      <p className="muted">
-        Menjalankan heuristik simulasi. Biasanya selesai dalam beberapa detik.
-      </p>
-      <ol>
-        {stages.map((stage) => (
-          <li key={stage}>
-            <span className="analysis-step" />
-            {stage}
-          </li>
-        ))}
-      </ol>
-    </section>
-  );
-}
 
-function EvidenceDialog({ caseId }: { caseId: string }) {
-  const [open, setOpen] = useState(false);
-  const [text, setText] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const notify = useNotify();
-  async function submit(event: React.FormEvent) {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      await riskService.addEvidence(caseId, text);
-      setText("");
-      setOpen(false);
-      notify(
-        "Bukti tambahan tersimpan sebagai laporan komunitas yang belum diverifikasi.",
-      );
-    } catch (error) {
-      setError(
-        messageOf(error).startsWith("[")
-          ? "Jelaskan bukti antara 20 dan 2.000 karakter."
-          : messageOf(error),
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <FilePlus2 size={16} />
-          Tambah Bukti
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Tambahkan bukti pendukung</DialogTitle>
-          <DialogDescription>
-            Jelaskan fakta yang dapat diperiksa. Hindari data pribadi, seed
-            phrase, dan tuduhan tanpa bukti. Laporan ini belum diverifikasi.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="form-stack">
-          <label htmlFor="evidence-text">Penjelasan bukti</label>
-          <textarea
-            id="evidence-text"
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            rows={5}
-            maxLength={2000}
-            aria-describedby="evidence-help"
-          />
-          <p id="evidence-help" className="muted text-sm">
-            20-2.000 karakter. Bukti disimpan pada browser ini.
-          </p>
-          {error && <ErrorState message={error} />}
-          <Button disabled={busy}>
-            {busy ? "Menyimpan..." : "Simpan Bukti"}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 export function TrackingScreen({ caseId }: { caseId?: string }) {
   const { data, ready, error: storageError } = useStore();
   const [error, setError] = useState("");
+  const [apiItem, setApiItem] = useState<any>(null);
   const notify = useNotify();
-  const item = caseId
+  const baseItem = caseId
     ? data.cases.find((entry) => entry.id === caseId)
     : data.cases[0];
+  const item = apiItem || baseItem;
   const id = item?.id;
   const status = item?.status;
+
   useEffect(() => {
-    if (!id || !["submitted", "analyzing"].includes(status ?? "")) return;
-    let active = true;
-    riskService.analyze(id).catch((error) => {
-      if (active) setError(messageOf(error));
-    });
-    return () => {
-      active = false;
+    if (!id) return;
+    const fetchCase = () => {
+      fetch(`/api/case?id=${id}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => { if (data) setApiItem(data); })
+        .catch(console.error);
     };
-  }, [id, status]);
+    fetchCase();
+    const interval = setInterval(fetchCase, 3000);
+    return () => clearInterval(interval);
+  }, [id]);
+
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(
@@ -226,26 +143,8 @@ export function TrackingScreen({ caseId }: { caseId?: string }) {
         </Button>
       </div>
       {error && <ErrorState message={error} />}
-      {!item.assessment ? (
-        <>
-          <AnalysisProgress />
-          {error && (
-            <Button
-              onClick={() => {
-                setError("");
-                void riskService
-                  .analyze(item.id)
-                  .catch((error) => setError(messageOf(error)));
-              }}
-            >
-              Coba lagi
-            </Button>
-          )}
-        </>
-      ) : (
-        <>
-          <RiskScores assessment={item.assessment} />
-          <ShariaNote />
+      <RiskScores caseItem={item} />
+      <ShariaNote />
           <div className="report-layout">
             <section className="panel">
               <div className="section-title">
@@ -256,28 +155,13 @@ export function TrackingScreen({ caseId }: { caseId?: string }) {
                 Ketiga skor berasal dari pencocokan kata pada target. Belum ada
                 pemeriksaan kontrak atau data on-chain.
               </p>
-              <EvidenceList assessment={item.assessment} />
+              <EvidenceList caseItem={item} />
               <div className="report-evidence-bottom">
-                <EvidenceDialog caseId={item.id} />
                 <Link className="text-link" href="/methodology">
                   Cara membaca hasil
                   <ArrowRight size={14} />
                 </Link>
               </div>
-              {item.reports.length > 0 && (
-                <div className="community-reports">
-                  <h3>Bukti tambahan komunitas</h3>
-                  {item.reports.map((report) => (
-                    <article key={report.id}>
-                      <span className="badge neutral">Belum diverifikasi</span>
-                      <p>{report.text}</p>
-                      <time dateTime={report.createdAt}>
-                        {dateTime(report.createdAt)}
-                      </time>
-                    </article>
-                  ))}
-                </div>
-              )}
             </section>
             <div className="report-sidebar">
               <PublicTracker item={item} />
@@ -290,17 +174,15 @@ export function TrackingScreen({ caseId }: { caseId?: string }) {
               </div>
               <Button asChild variant="outline">
                 <Link
-                  href={item.vote ? "/ledger" : `/validator/cases/${item.id}`}
+                  href={item.status === "on-chain" || item.status === "resolved" ? "/ledger" : `/validator/cases/${item.id}`}
                 >
-                  {item.vote ? "Public Ledger" : "Buka Validasi"}
+                  {item.status === "on-chain" || item.status === "resolved" ? "Public Ledger" : "Buka Validasi"}
                   <ArrowRight size={16} />
                 </Link>
               </Button>
             </div>
           </div>
           <DisclaimerBanner />
-        </>
-      )}
     </div>
   );
 }

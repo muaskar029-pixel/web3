@@ -8,7 +8,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import {
-  type Assessment,
   type RiskCase,
   type RiskDimension,
   type RiskLevel,
@@ -71,20 +70,20 @@ export function RiskScoreCard({
         <span>/ 100</span>
         <RiskLevelBadge level={dimension.level} />
       </div>
-      <p>{dimension.summary}</p>
+      <p className="line-clamp-3">{dimension.evidence.join(" ")}</p>
       <span className="risk-quality">
         Sumber: heuristik demo · Kualitas data terbatas
       </span>
     </article>
   );
 }
-export function RiskScores({ assessment }: { assessment: Assessment }) {
+export function RiskScores({ caseItem }: { caseItem: RiskCase }) {
   return (
     <div className="risk-scores">
       {dimensionInfo.map(({ key, title, icon }) => (
         <RiskScoreCard
           key={key}
-          dimension={assessment[key]}
+          dimension={caseItem[key as keyof Pick<RiskCase, "technicalRisk" | "socialRisk" | "shariaRisk">] as RiskDimension}
           title={title}
           icon={icon}
         />
@@ -93,57 +92,62 @@ export function RiskScores({ assessment }: { assessment: Assessment }) {
   );
 }
 
-export function EvidenceList({ assessment }: { assessment: Assessment }) {
+export function EvidenceList({ caseItem }: { caseItem: RiskCase }) {
   return (
     <div className="evidence-list">
-      {dimensionInfo.map(({ key, title, icon: Icon }, index) => (
-        <details key={key} open={index === 0}>
-          <summary>
-            <span>
-              <Icon size={19} />
-              {title}
-            </span>
-            <span className="muted">
-              Lihat bukti <span className="disclosure-chevron">⌄</span>
-            </span>
-          </summary>
-          <div className="evidence-body">
-            {assessment[key].evidence.map((evidence) => (
-              <div key={evidence.title}>
-                <div className="evidence-title">
-                  <strong>{evidence.title}</strong>
-                  <span className="badge neutral">Heuristik demo</span>
+      {dimensionInfo.map(({ key, title, icon: Icon }, index) => {
+        const dimension = caseItem[key as keyof Pick<RiskCase, "technicalRisk" | "socialRisk" | "shariaRisk">] as RiskDimension;
+        return (
+          <details key={key} open={index === 0}>
+            <summary>
+              <span>
+                <Icon size={19} />
+                {title}
+              </span>
+              <span className="muted">
+                Lihat bukti <span className="disclosure-chevron">⌄</span>
+              </span>
+            </summary>
+            <div className="evidence-body">
+              {dimension.evidence.map((evidenceText, i) => (
+                <div key={i}>
+                  <p>• {evidenceText}</p>
                 </div>
-                <p>{evidence.detail}</p>
-              </div>
-            ))}
-          </div>
-        </details>
-      ))}
+              ))}
+              {(dimension as any).disclaimer && (
+                <div className="mt-2 text-sm text-yellow-500 italic">
+                  Disclaimer: {(dimension as any).disclaimer}
+                </div>
+              )}
+            </div>
+          </details>
+        );
+      })}
     </div>
   );
 }
 
 export function PublicTracker({ item }: { item: RiskCase }) {
+  const isResolved = item.status === "resolved";
+  const isOnChain = item.status === "on-chain" || isResolved;
+
   return (
     <section className="panel public-tracker">
       <div className="section-title">
         <h2>Public Tracker</h2>
-        <span className="badge simulation">Simulasi</span>
+        <span className="badge neutral">On-chain</span>
       </div>
       <div
-        className={`tracker-message ${item.vote === "Phishing" ? "risk-high" : item.vote ? "risk-low" : ""}`}
+        className={`tracker-message ${isResolved ? "risk-low" : isOnChain ? "neutral" : ""}`}
       >
         <ShieldCheck size={25} />
         <div>
           <strong>
-            {item.vote
-              ? `Hasil voting komunitas: ${voteLabels[item.vote]}`
-              : "Sedang dalam antrean validasi komunitas"}
+            {statusLabels[item.status]}
           </strong>
           <p>
-            {item.vote
-              ? "Satu vote pada skenario demo. Belum merupakan konsensus blockchain nyata."
+            {isOnChain
+              ? `Transaksi tercatat on-chain. Hash: ${short(item.txHash || "")}`
               : "Hasil analisis tersedia. Belum ada konsensus komunitas."}
           </p>
         </div>
@@ -153,11 +157,19 @@ export function PublicTracker({ item }: { item: RiskCase }) {
   );
 }
 export function StatusTimeline({ item }: { item: RiskCase }) {
+  const steps = [
+    { status: "pending" as const, at: item.createdAt }
+  ];
+  if (item.status === "on-chain" || item.status === "resolved") {
+    steps.push({ status: "on-chain" as const, at: item.updatedAt });
+  }
+  if (item.status === "resolved") {
+    steps.push({ status: "resolved" as const, at: item.updatedAt });
+  }
+
   return (
     <ol className="status-timeline">
-      {item.timeline
-        .filter((entry) => entry.status !== "voting")
-        .map((entry, index) => (
+      {steps.map((entry, index) => (
           <li key={`${entry.status}-${index}`}>
             <CheckCircle2 size={16} />
             <div>

@@ -26,6 +26,8 @@ export const metadata: Metadata = {
     "Periksa indikator risiko tautan, wallet, dan grup investasi. Demo intelijen risiko Web3 berbahasa Indonesia dengan validasi komunitas.",
   robots: { index: false, follow: false },
 };
+import { Web3Provider } from "@/components/web3-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -35,13 +37,15 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
       </head>
       <body className={`${geist.variable} ${mono.variable}`}>
-        <NotificationProvider>
-          <Navbar />
-          <main id="main" tabIndex={-1}>
-            {children}
-          </main>
-          <Footer />
-        </NotificationProvider>
+        <Web3Provider>
+          <NotificationProvider>
+            <Navbar />
+            <main id="main" tabIndex={-1}>
+              {children}
+            </main>
+            <Footer />
+          </NotificationProvider>
+        </Web3Provider>
       </body>
     </html>
   );
